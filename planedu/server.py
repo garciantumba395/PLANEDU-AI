@@ -2,6 +2,7 @@
 import base64
 import json
 import mimetypes
+import os
 import re
 import sys
 import threading
@@ -45,7 +46,7 @@ def h_login(c):
     good = bool(u) and auth.verify_password(pwd, u["hash_mdp"], u["sel"])
     if not u:
         auth.hash_password(pwd)  # temps constant approximatif
-    if good and u["role"] in auth.OTP_ROLES:
+    if good and auth.otp_enforced(u["role"]):
         if not otp:
             raise ApiError("otp_required", 401, otp_required=True)
         if not auth.totp_verify(auth.user_secret(u), otp):
@@ -62,7 +63,7 @@ def h_login(c):
         c.conn.execute("DELETE FROM session WHERE expire<?", (time.time(),))
         token = auth.create_session(c.conn, u["id"])
         audit.log(c.conn, u["login"], "login", u["role"])
-    return {"token": token, "otp_required": u["role"] in auth.OTP_ROLES, "user": public_user(dict(u))}
+    return {"token": token, "otp_required": auth.otp_enforced(u["role"]), "user": public_user(dict(u))}
 
 
 def public_user(u):
@@ -116,6 +117,8 @@ def h_template(c):
 
 ROUTES = [
     ("GET", r"/api/health", lambda c: {"ok": True, "version": VERSION}, False),
+    ("GET", r"/api/demo-info", lambda c: {"demo": os.environ.get("PLANEDU_DEMO") == "1", "no_otp": os.environ.get("PLANEDU_DEMO_NO_OTP") == "1",
+                                          "hint": os.environ.get("PLANEDU_DEMO_HINT") or None}, False),
     ("POST", r"/api/login", h_login, False),
     ("POST", r"/api/logout", h_logout, True),
     ("GET", r"/api/me", lambda c: public_user(c.user), True),

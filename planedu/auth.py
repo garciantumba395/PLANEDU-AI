@@ -12,6 +12,11 @@ from . import db
 PBKDF2_ITER = 200_000
 SESSION_TTL = 8 * 3600
 OTP_ROLES = ("admin", "gestionnaire")
+
+
+def otp_enforced(role):
+    """2FA exigée (ES-02) sauf mode démo explicite PLANEDU_DEMO_NO_OTP=1 (données synthétiques uniquement)."""
+    return role in OTP_ROLES and os.environ.get("PLANEDU_DEMO_NO_OTP") != "1"
 _keycache = {}
 
 

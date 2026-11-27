@@ -1,0 +1,21 @@
+name: Application bureau
+on:
+  push: { tags: ['v*'] }
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      matrix: { os: [windows-latest, macos-latest, ubuntu-latest] }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.13' }
+      - run: pip install -r requirements.txt pywebview pyinstaller
+      - name: Build
+        shell: bash
+        run: |
+          SEP=":"; [ "$RUNNER_OS" = "Windows" ] && SEP=";"
+          pyinstaller --noconfirm --windowed --name PLANEDU-IA --add-data "planedu/static${SEP}planedu/static" desktop_entry.py
+      - uses: actions/upload-artifact@v4
+        with: { name: PLANEDU-IA-${{ matrix.os }}, path: dist/ }

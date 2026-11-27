@@ -1,5 +1,6 @@
 """Point d'entrée : python3 -m planedu [--port 8000] [--host 127.0.0.1] [--data DIR] | otp <login>"""
 import argparse
+import os
 import sys
 import time
 
@@ -10,8 +11,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(prog="planedu")
     ap.add_argument("commande", nargs="?", default="serve", choices=["serve", "otp"])
     ap.add_argument("login", nargs="?")
-    ap.add_argument("--port", type=int, default=8000)
-    ap.add_argument("--host", default="127.0.0.1")
+    ap.add_argument("--port", type=int, default=int(os.environ.get("PORT", 8000)))
+    ap.add_argument("--host", default="0.0.0.0" if os.environ.get("PORT") else "127.0.0.1")
     ap.add_argument("--data", help="dossier de données (défaut : ./data ou $PLANEDU_DATA)")
     ap.add_argument("-v", "--verbose", action="store_true")
     a = ap.parse_args(argv)

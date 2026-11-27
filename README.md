@@ -13,6 +13,9 @@ python3 -m unittest discover -s tests   # 45 tests
 Identifiants de démo générés dans `data/DEMO_CREDENTIALS.txt` (gitignoré). Comptes : `admin`, `gest_kc`, `gest_kw`, `decideur`, `chef_e01`…`chef_e60`.
 Dépendances : Python 3.13, numpy, openpyxl, reportlab. Front vanilla, sans CDN.
 
+## Hébergement gratuit (Render) et application de bureau
+Voir `docs/DEPLOIEMENT.md`.
+
 ## Documentation
 `docs/CONTRACT.md` : architecture, modèle de données, rôles, API.
 

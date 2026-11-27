@@ -185,7 +185,7 @@ def _create_users(conn, ecoles):
         specs.append((f"chef_e{e['id']:02d}", "chef", None, e["id"], e["nom"]))
     with db.tx(conn):
         for login, role, pid, eid, perim in specs:
-            _, pwd, sec = auth.create_user(conn, login, role, pid, eid)
+            _, pwd, sec = auth.create_user(conn, login, role, pid, eid, password=os.environ.get("PLANEDU_DEMO_PASSWORD") or None)
             lines.append(f"{login} ; {pwd} ; {sec or '-'} ; {role} ; {perim}")
     p = db.DATA_DIR / "DEMO_CREDENTIALS.txt"
     p.write_text("\n".join(lines) + "\n", encoding="utf-8")

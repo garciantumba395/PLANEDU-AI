@@ -153,6 +153,9 @@ V.login=async main=>{
     h('h1',{tabindex:'-1'},'Connexion'),h('p',{class:'mut'},'Accès réservé aux agents habilités. L’authentification à deux facteurs est obligatoire pour les administrateurs et gestionnaires.'),
     fld('Identifiant',lg),fld('Mot de passe',pw),otpF,msg,btn);
   main.replaceChildren(form);
+  try{const d=await (await fetch('/api/demo-info')).json();
+    if(d.demo&&d.hint)form.append(h('div',{class:'okm'},'Mode démo — comptes : admin, gest_kc, gest_kw, decideur, chef_e01… ; mot de passe commun : ',h('b',{},d.hint),d.no_otp?' (2FA désactivée en démo).':'.'));
+    else if(d.demo&&d.no_otp)form.append(h('div',{class:'okm'},'Mode démo : 2FA désactivée. Le mot de passe est fourni par l’organisateur de la démo.'));}catch(e){}
 };
 
 V.dashboard=async(main)=>{
