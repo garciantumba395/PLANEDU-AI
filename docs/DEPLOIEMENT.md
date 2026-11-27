@@ -10,7 +10,7 @@ Limites du plan gratuit : mise en veille après ~15 min d'inactivité (réveil ~
 
 ## B. Application de bureau (Windows / macOS / Linux)
 Fenêtre native (pywebview) + serveur local 127.0.0.1, 100 % hors ligne, données dans `%APPDATA%\PLANEDU-IA`.
-- Build automatique : GitHub → **Actions → Application bureau → Run workflow** ; récupérer l'artefact `PLANEDU-IA-windows-latest` (dossier `PLANEDU-IA` avec `PLANEDU-IA.exe`).
+- Build automatique : GitHub → onglet **Actions → Application bureau** (se lance seul à chaque push de la PR, ou à la création d’un tag `v*`) ; récupérer l'artefact `PLANEDU-IA-windows-latest` (dossier `PLANEDU-IA` avec `PLANEDU-IA.exe`).
 - Windows : nécessite WebView2 (préinstallé sur Windows 10/11 récents). Non signé : SmartScreen peut avertir (« Informations complémentaires » → « Exécuter quand même »).
 - Connexion : comptes ci-dessus, mot de passe de démo affiché sur l'écran de connexion, 2FA désactivée.
 - Lancement sans installeur : `pip install -r requirements.txt pywebview && python -m planedu.desktop`.
