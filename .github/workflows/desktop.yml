@@ -17,6 +17,6 @@ jobs:
         shell: bash
         run: |
           SEP=":"; [ "$RUNNER_OS" = "Windows" ] && SEP=";"
-          pyinstaller --noconfirm --windowed --name PLANEDU-IA --add-data "planedu/static${SEP}planedu/static" desktop_entry.py
+          pyinstaller --noconfirm --windowed --icon planedu/icon.ico --name PLANEDU-IA --add-data "planedu/static${SEP}planedu/static" desktop_entry.py
       - uses: actions/upload-artifact@v4
         with: { name: PLANEDU-IA-${{ matrix.os }}, path: dist/ }

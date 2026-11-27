@@ -128,12 +128,12 @@ function mapSvg(items,mode){
   const ox=(W-(mxx-mnx)*s)/2,oy=(H-(mxy-mny)*s)/2;
   const val=p=>mode==='ecart'?Math.abs(p.ecart||0):(p.departs||0),mv=Math.max(...pts.map(val),1);
   const g=sv('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',role:'img','aria-label':'Carte schématique des sous-divisions : cercle proportionnel aux '+(mode==='ecart'?'écarts':'départs prévus')+', rouge si manque, vert-bleu si surplus ou équilibre'});
-  g.append(sv('rect',{x:0,y:0,width:W,height:H,fill:'#f0f5f6',rx:8}));
+  g.append(sv('rect',{x:0,y:0,width:W,height:H,fill:'#eef4fb',rx:8}));
   pts.forEach((p,i)=>{const x=ox+(p.lon*k-mnx)*s,y=oy+(-p.lat-mny)*s,r=8+20*Math.sqrt(val(p)/mv),bad=(p.ecart||0)>0;
     const c=sv('g',null,sv('title',null,`${p.nom} : ${fm(p.departs)} départs prévus, écart ${fm(p.ecart)}, ${fm(p.manque)} école(s) en manque`),
-      sv('circle',{cx:x,cy:y,r,fill:bad?'#b3261e':'#14697a','fill-opacity':.72,stroke:'#fff','stroke-width':2}),
+      sv('circle',{cx:x,cy:y,r,fill:bad?'#b3261e':'#0b4fa8','fill-opacity':.72,stroke:'#fff','stroke-width':2}),
       sv('text',{x,y:y+(i%2?r+13:-r-5),'text-anchor':'middle','font-size':12,fill:'#1c2a30',stroke:'#fff','stroke-width':3,'paint-order':'stroke',class:'bar-l'},p.nom));g.append(c);});
-  return h('div',null,g,h('div',{class:'legend'},h('span',null,h('i',{style:'background:#b3261e'}),'Manque d’enseignants (écart > 0)'),h('span',null,h('i',{style:'background:#14697a'}),'Surplus ou équilibre'),h('span',null,'Taille : '+(mode==='ecart'?'écart absolu':'départs prévus'))));
+  return h('div',null,g,h('div',{class:'legend'},h('span',null,h('i',{style:'background:#b3261e'}),'Manque d’enseignants (écart > 0)'),h('span',null,h('i',{style:'background:#0b4fa8'}),'Surplus ou équilibre'),h('span',null,'Taille : '+(mode==='ecart'?'écart absolu':'départs prévus'))));
 }
 
 /* ---------- vues ---------- */
@@ -150,7 +150,7 @@ V.login=async main=>{
     catch(x){if(x.data&&(x.data.otp_required||x.data.error==='otp_required')){needOtp=true;otpF.hidden=false;otp.required=true;otp.focus();msg.replaceChildren(h('div',{class:'okm'},'Ce compte exige un code à usage unique (TOTP). Saisissez le code de votre application.'));}
       else msg.replaceChildren(errBox(x.status===401?new Error('Identifiants ou code incorrects.'):x));}
     btn.disabled=false;}},
-    h('h1',{tabindex:'-1'},'Connexion'),h('p',{class:'mut'},'Accès réservé aux agents habilités. L’authentification à deux facteurs est obligatoire pour les administrateurs et gestionnaires.'),
+    h('img',{class:'login-logo',src:'logo.png',alt:'PLANEDU-IA — Anticiper. Planifier. Agir.'}),h('h1',{tabindex:'-1'},'Connexion'),h('p',{class:'mut'},'Accès réservé aux agents habilités. L’authentification à deux facteurs est obligatoire pour les administrateurs et gestionnaires.'),
     fld('Identifiant',lg),fld('Mot de passe',pw),otpF,msg,btn);
   main.replaceChildren(form);
   try{const d=await (await fetch('/api/demo-info')).json();
@@ -173,8 +173,8 @@ V.dashboard=async(main)=>{
       h('div',{class:'grid kpis'},K('Enseignants',fm(k.enseignants)),K('Départs prévus ('+f.horizon+' mois)',fm(k.departs_prevus)),K('Écart total',fm(k.ecart_total),k.ecart_total>0),K('Écoles en manque',fm(k.ecoles_en_manque),k.ecoles_en_manque>0),K('Qualité des données',k.qualite_donnees_pct==null?'—':fm(k.qualite_donnees_pct)+' %'),K('Recommandations traitées',k.reco_traitees_pct==null?'—':fm(k.reco_traitees_pct)+' %')),
       h('div',{class:'grid two',style:'margin-top:14px'},
         h('section',{class:'card'},h('h2',null,'Carte des sous-divisions'),radios,mapBox),
-        h('section',{class:'card'},h('h2',null,'Départs et écarts par niveau'),bars(d.par_niveau||[],'niveau',[{k:'departs',l:'Départs prévus',c:'#14697a'},{k:'ecart',l:'Écart (manque > 0)',c:'#a35a00'}],'Départs et écart par niveau'),
-          h('h2',{style:'margin-top:16px'},'Départs prévus par horizon'),bars((d.serie_departs||[]).map(r=>({...r,horizon:r.horizon+' mois'})),'horizon',[{k:'retraite',l:'Retraite',c:'#14697a'},{k:'abandon_absence',l:'Abandon / absence prolongée',c:'#8a3ffc'}],'Départs par horizon')),
+        h('section',{class:'card'},h('h2',null,'Départs et écarts par niveau'),bars(d.par_niveau||[],'niveau',[{k:'departs',l:'Départs prévus',c:'#0b4fa8'},{k:'ecart',l:'Écart (manque > 0)',c:'#c25800'}],'Départs et écart par niveau'),
+          h('h2',{style:'margin-top:16px'},'Départs prévus par horizon'),bars((d.serie_departs||[]).map(r=>({...r,horizon:r.horizon+' mois'})),'horizon',[{k:'retraite',l:'Retraite',c:'#0b4fa8'},{k:'abandon_absence',l:'Abandon / absence prolongée',c:'#0177a1'}],'Départs par horizon')),
       ),
       h('details',{class:'card'},h('summary',null,'Données de la carte (tableau)'),tbl([{l:'Sous-division',k:'nom'},{l:'Départs',n:1,f:r=>fm(r.departs)},{l:'Écart',n:1,f:r=>fm(r.ecart)},{l:'Écoles',n:1,f:r=>fm(r.ecoles)},{l:'En manque',n:1,f:r=>fm(r.manque)}],psd)),
       h('p',{class:'mut'},d.calcul_ms!=null?'Calculé en '+fm(d.calcul_ms)+' ms. ':'',d.banniere||'')];
@@ -219,7 +219,7 @@ function reco(r,refresh){
     h('div',{class:'row sp'},h('h2',{style:'margin:0'},'Proposition n° '+r.rang+' — '+nameOf(r)),stBadge(r.statut)),
     h('p',{class:'mut'},[r.matiere,r.niveau].filter(Boolean).join(' · ')+' · gain d’écart : '+fm(r.gain_ecart)+' · distance : '+fm(r.km)+' km'),
     h('div',{class:'route'},h('div',{class:'sch'},h('small',null,'École de départ (surplus)'),r.ecole_depart||'—'),
-      h('div',{class:'arr'},fm(r.km)+' km',sv('svg',{viewBox:'0 0 90 14','aria-hidden':'true'},sv('line',{x1:0,y1:7,x2:80,y2:7,stroke:'#14697a','stroke-width':2}),sv('path',{d:'M78 2 L89 7 L78 12 Z',fill:'#14697a'}))),
+      h('div',{class:'arr'},fm(r.km)+' km',sv('svg',{viewBox:'0 0 90 14','aria-hidden':'true'},sv('line',{x1:0,y1:7,x2:80,y2:7,stroke:'#0b4fa8','stroke-width':2}),sv('path',{d:'M78 2 L89 7 L78 12 Z',fill:'#0b4fa8'}))),
       h('div',{class:'sch'},h('small',null,'École d’arrivée (manque)'),r.ecole_arrivee||'—')),
     (r.raisons||[]).length?h('ul',{class:'tight'},r.raisons.map(x=>h('li',null,x))):null,
     (r.contraintes_respectees||[]).length?h('div',{class:'row'},r.contraintes_respectees.map(c=>h('span',{class:'badge b-ok'},'✓ '+c))):null,
