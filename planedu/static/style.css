@@ -83,7 +83,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .toast.e{background:#8e1c15}
 footer{max-width:1200px;margin:0 auto;padding:10px 16px 24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:.8rem;color:var(--mut)}
 footer .lite{display:flex;gap:6px;align-items:center;font-weight:400;margin:0}footer input{min-height:0}
-.bar-l{font-size:11px;fill:#1c2a30}
+.bar-l{font-size:13px;fill:#1c2a30}
 body.light *{animation:none!important;transition:none!important}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:640px){

@@ -10,7 +10,7 @@ const arr=(r,k)=>Array.isArray(r)?r:(r&&(r[k]||r.items))||[];
 const ls={get(k){try{return localStorage.getItem(k);}catch(_){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(_){}} };
 const ss={get(k){try{return sessionStorage.getItem(k);}catch(_){return null;}},set(k,v){try{v==null?sessionStorage.removeItem(k):sessionStorage.setItem(k,v);}catch(_){}} };
 const S={token:ss.get('pl_tok'),user:null,geo:null,lite:ls.get('pl_lite')==='1',f:{},rid:0};
-const PAGE=()=>S.lite?20:50;
+const PAGE=()=>S.lite||innerWidth<640?20:50;
 const $=s=>document.querySelector(s);
 const nameOf=x=>x.nom||x.enseignant_id||'—';
 const ROLES={admin:'Administrateur',gestionnaire:'Gestionnaire',chef:"Chef d'établissement",decideur:'Décideur'};
@@ -65,7 +65,7 @@ async function geo(){if(!S.geo){const g=await api('/api/geo');S.geo={provinces:g
 
 /* ---------- composants ---------- */
 function load(box,fn){const t=box._t=(box._t||0)+1;box.replaceChildren(h('p',{class:'mut'},'Chargement…'));
-  return fn().then(n=>{if(box._t===t)box.replaceChildren(...[].concat(n));},e=>{if(box._t===t&&e.status!==401)box.replaceChildren(errBox(e));});}
+  return fn().then(n=>{if(box._t===t)box.replaceChildren(...[n].flat(Infinity).filter(x=>x!=null&&x!==false));},e=>{if(box._t===t&&e.status!==401)box.replaceChildren(errBox(e));});}
 function tbl(cols,rows,cap){
   if(!rows.length)return h('p',{class:'empty'},'Aucun résultat.');
   return h('div',{class:'tw'},h('table',{class:'st'},cap&&h('caption',null,cap),h('thead',null,h('tr',null,cols.map(c=>h('th',{scope:'col',class:c.n?'n':null},c.l)))),
@@ -289,7 +289,7 @@ V.admin=async main=>{
 };
 const AD={
   async users(p){const list=h('div'),note=h('div');const g=await geo().catch(()=>({provinces:[]}));
-    const lg=h('input',{required:true,pattern:'[A-Za-z0-9_.-]{3,40}'}),rl=sel(Object.entries(ROLES).map(([v,l])=>[v,l]),'gestionnaire',()=>{}),pv=sel([['','—'],...g.provinces.map(x=>[x.id,x.nom])],'',()=>{}),ec=h('input',{type:'number',min:1});
+    const lg=h('input',{required:true,pattern:'[A-Za-z0-9_.\\-]{3,40}'}),rl=sel(Object.entries(ROLES).map(([v,l])=>[v,l]),'gestionnaire',()=>{}),pv=sel([['','—'],...g.provinces.map(x=>[x.id,x.nom])],'',()=>{}),ec=h('input',{type:'number',min:1});
     const refresh=()=>load(list,async()=>{const d=await api('/api/admin/users');return tbl([{l:'Identifiant',k:'login'},{l:'Rôle',f:u=>ROLES[u.role]||u.role},{l:'Province',f:u=>u.province_nom||u.province_id||'—'},{l:'École',f:u=>u.ecole_id||'—'},{l:'Actif',f:u=>u.actif?h('span',{class:'badge b-ok'},'Actif'):h('span',{class:'badge b-bad'},'Désactivé')},
       {l:'Action',f:u=>h('button',{type:'button',class:'btn sec sm','aria-label':(u.actif?'Désactiver ':'Activer ')+u.login,onclick:async()=>{try{await api('/api/admin/users/'+u.id,{method:'PATCH',body:{actif:!u.actif}});refresh();}catch(x){if(x.status!==401)toast(x.message,true);}}},u.actif?'Désactiver':'Activer')}],arr(d,'users'),'Comptes utilisateurs');});
     const form=h('form',{class:'card',onsubmit:async e=>{e.preventDefault();note.replaceChildren();
@@ -306,7 +306,7 @@ const AD={
       h('form',{class:'card',onsubmit:e=>{e.preventDefault();modal('Confirmer la restauration',h('p',null,'La base actuelle sera remplacée par « '+fi.value+' ». Cette opération est journalisée. Continuer ?'),{ok:'Restaurer',cls:'bad',onOk:async()=>{const r=await api('/api/admin/restore',{method:'POST',body:{fichier:fi.value.trim()}});out.replaceChildren(h('div',{class:'okm',role:'status'},'Restauration effectuée.'),kv(r));toast('Restauration effectuée.');}});}},
       h('h2',null,'Restauration'),h('div',{class:'filters'},fld('Fichier de sauvegarde',fi),h('button',{class:'btn sec',type:'submit'},'Restaurer…'))));},
   rbac(p){const out=h('div');p.append(h('section',{class:'card'},h('h2',null,'Test négatif d’accès inter-province'),h('p',{class:'mut'},'Vérifie qu’un gestionnaire ne peut pas accéder aux données d’une autre province (attendu : refus 403).'),h('button',{type:'button',class:'btn',onclick:e=>{e.target.disabled=true;load(out,async()=>{const r=await api('/api/admin/rbac-test');const ok=r.ok??r.passed??r.succes;e.target.disabled=false;return [ok===undefined?null:h('p',null,h('span',{class:'badge '+(ok?'b-ok':'b-bad')},ok?'✓ Test réussi':'✗ Test en échec')),kv(r)];}).then(()=>{e.target.disabled=false;});}},'Exécuter le test'),out));},
-  async normes(p){const out=h('div');load(out,async()=>{const [n,pa]=await Promise.all([api('/api/normes'),api('/api/parametres')]);let rows=arr(n,'normes').map(x=>({...x}));
+  async normes(p){const out=h("div");p.append(out);load(out,async()=>{const [n,pa]=await Promise.all([api('/api/normes'),api('/api/parametres')]);let rows=arr(n,'normes').map(x=>({...x}));
     const inp=(o,k,t)=>h('input',{type:t||'number',value:o[k]??'',min:t?null:0,step:k==='eleves_par_enseignant'?'any':1,'aria-label':k,onchange:e=>{o[k]=t?e.target.value:+e.target.value;}});
     const pm={age_legal_retraite:pa.age_legal_retraite,max_km:pa.max_km,annee_cible:pa.annee_cible};const PL={age_legal_retraite:'Âge légal de retraite',max_km:'Distance maximale de redéploiement (km)',annee_cible:'Année cible'};
     const msg=h('div',{role:'status'});
