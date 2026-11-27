@@ -1,6 +1,11 @@
 """Exports XLSX (openpyxl), CSV et PDF (reportlab) ; neutralise l'injection de formules (OWASP CSV injection)."""
 import csv
 import io
+from pathlib import Path
+
+STATIC = Path(__file__).resolve().parent / "static"
+LOGO = STATIC / "logo.png"          # PDF : dessiné en filigrane (opacité 9 %)
+WATERMARK = STATIC / "watermark.png"  # XLSX : logo pré-estompé (10 %)
 
 CONTENT_TYPES = {
     "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -45,6 +50,14 @@ def xlsx_bytes(title, cols, rows, meta):
         width = max([len(str(col))] + [len(str(r[i - 1])) for r in rows[:200] if i - 1 < len(r) and r[i - 1] is not None])
         ws.column_dimensions[ws.cell(row=4, column=i).column_letter].width = min(60, width + 2)
     ws.freeze_panes = "A5"
+    try:  # filigrane : logo estompé flottant derrière/au-dessus des données, centré sur la zone visible
+        from openpyxl.drawing.image import Image as XlImage
+        img = XlImage(str(WATERMARK))
+        img.width, img.height = 520, int(520 * img.height / img.width)
+        ws.add_image(img, "B6")
+        ws.oddHeader.center.text = "PLANEDU-IA - Données de démonstration"
+    except Exception:
+        pass  # le filigrane ne doit jamais bloquer un export
     bio = io.BytesIO()
     wb.save(bio)
     return bio.getvalue()
@@ -61,6 +74,23 @@ def pdf_bytes(title, cols, rows, meta, max_rows=600):
     head = ss["BodyText"].clone("head", fontSize=7, leading=8, textColor=colors.white)
     bio = io.BytesIO()
     doc = SimpleDocTemplate(bio, pagesize=landscape(A4), leftMargin=24, rightMargin=24, topMargin=30, bottomMargin=28, title=title)
+
+    from reportlab.pdfgen.canvas import Canvas
+
+    class WMCanvas(Canvas):
+        """Dessine le filigrane APRÈS le contenu de la page (sinon les fonds du tableau le masquent)."""
+
+        def showPage(self):
+            try:
+                pw, ph = landscape(A4)
+                w = 440
+                self.saveState()
+                self.setFillAlpha(0.10)
+                self.drawImage(str(LOGO), (pw - w) / 2, (ph - w * 0.66) / 2, width=w, height=w * 0.66, mask="auto", preserveAspectRatio=True)
+                self.restoreState()
+            except Exception:
+                pass  # le filigrane ne doit jamais bloquer un export
+            super().showPage()
 
     def footer(canvas, d):
         canvas.saveState()
@@ -82,5 +112,5 @@ def pdf_bytes(title, cols, rows, meta, max_rows=600):
     story.append(t)
     if len(rows) > max_rows:
         story += [Spacer(1, 6), Paragraph(f"{len(rows) - max_rows} ligne(s) supplémentaire(s) non affichée(s) : utiliser l'export XLSX ou CSV.", ss["BodyText"])]
-    doc.build(story, onFirstPage=footer, onLaterPages=footer)
+    doc.build(story, onFirstPage=footer, onLaterPages=footer, canvasmaker=WMCanvas)
     return bio.getvalue()
