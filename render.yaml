@@ -12,3 +12,5 @@ services:
         generateValue: true
       - key: PLANEDU_DEMO_PASSWORD
         generateValue: true   # mot de passe commun des comptes de démo : à lire dans Render > Environment
+      - key: PLANEDU_ADMIN_PASSWORD
+        sync: false           # Render demande la valeur à la création : elle n'est jamais écrite dans le dépôt
