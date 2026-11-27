@@ -1,0 +1,16 @@
+# Déploiement gratuit sur Render : https://render.com -> New > Blueprint -> choisir ce dépôt.
+# Plan gratuit : le service s'endort après ~15 min d'inactivité (réveil ~30 s) et le disque est éphémère
+# (les données de démonstration sont régénérées à chaque redémarrage).
+services:
+  - type: web
+    name: planedu-ia-demo
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: PLANEDU_KEY
+        generateValue: true
+      - key: PLANEDU_DEMO_PASSWORD
+        generateValue: true   # mot de passe commun des comptes de démo : à lire dans Render > Environment
+      - key: PLANEDU_ADMIN_PASSWORD
+        sync: false           # Render demande la valeur à la création : elle n'est jamais écrite dans le dépôt
