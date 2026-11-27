@@ -5,6 +5,7 @@ Prototype du CDC TV-PRJ-2026-001 v0.1 : prévision des départs d'enseignants, b
 
 ## Lancer
 ```bash
+pip install -r requirements.txt
 python3 -m planedu            # http://127.0.0.1:8000 (1er démarrage : base + données de démo en ~3 s)
 python3 -m planedu otp admin  # code TOTP courant d'un compte 2FA
 python3 -m unittest discover -s tests   # 45 tests
