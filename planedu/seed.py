@@ -131,7 +131,7 @@ def run(conn, verbose=False):
                     seniority = (REF_DATE - entry).days / 365.25
                     remote = min(1.0, e["dist"] / 38.0)
                     scarcity = SCARCITE[m]
-                    p_att = _sigmoid(-2.55 + 1.7 * remote + 1.1 * scarcity + (0.9 if seniority < 4 else 0)
+                    p_att = _sigmoid(-2.7 + 2.4 * remote + 1.6 * scarcity + (1.2 if seniority < 4 else 0)
                                      - 0.025 * (seniority - 8) + (0.5 if e["niveau"] == "secondaire" else 0))
                     ret_date = _add_years(birth, LEGAL_AGE)
                     tid = auth.pseudonym(matricule)

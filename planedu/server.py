@@ -237,6 +237,8 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             traceback.print_exc()
             return self._json(500, {"error": "erreur interne du serveur"})
+        finally:
+            db.close_all()
 
     def _static(self, path):
         rel = "index.html" if path in ("/", "") else path.lstrip("/")
